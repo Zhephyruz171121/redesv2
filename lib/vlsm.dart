@@ -4,10 +4,10 @@ List<String> direccionesRed = [];
 List<String> direccionesDifucion = [];
 List<String> capacidadRed = [];
 
-List<List> vlsm(String ip, String sm, int subredes, List<int> hosts) {
-  List<List> lista = [];
+List<String> vlsm(String ip, String sm, int subredes, List<int> hosts) {
+  List<String> lista = [];
   for (var element in hosts) {
-    lista.add(llamarCIDR(ip, sm, element));
+    lista.addAll(llamarCIDR(ip, sm, element));
   }
 
   return lista;

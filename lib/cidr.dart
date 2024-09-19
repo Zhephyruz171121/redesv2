@@ -10,12 +10,12 @@ List<int> ipdec = [];
 List<int> smdec = [];
 List<int> smdec2 = [];
 List<String> ipBin = [];
-List<List<String>> ipRed = [];
-List<List<String>> ipBroadcast = [];
+String ipRed = "";
+String ipBroadcast = "";
 List<String> smBin = [];
 
-List<List> llamarCIDR(String ipE, String smE, int usersE) {
-  List<List> salida = [];
+List<String> llamarCIDR(String ipE, String smE, int usersE) {
+  List<String> salida = [];
   List<String> auxOctetos;
   String ip = ipE;
   auxOctetos = ip.split('.');
@@ -59,7 +59,7 @@ void calcular(String ip, String sm, int users) {
   for (var element in smBin) {
     smdec.add(binarioDecimal(element));
   }
-  while (pow(2, bitsRed) - 2 <= users) {
+  while (pow(2, bitsRed) - 2 <= users - 1) {
     bitsRed++;
   }
   bitsSubRed = 32 - bitsRed - smBase;
@@ -119,6 +119,8 @@ int binarioDecimal(String binario) {
 }
 
 void redes(String sm) {
+  List<String> _ipRed = [];
+  List<String> _ipBroadcast = [];
   String ipaux = ipBin.join();
   ipaux = ipaux.substring(0, smGeneral);
   ipaux = ipaux.padRight(32, "0");
@@ -126,27 +128,20 @@ void redes(String sm) {
   String aux2 = "";
   String aux31 = "";
   int cont = 0;
-  //int pos = 0;
-  /*
-  while (pos < pow(2, bitsSubRed - int.parse(sm))) {
-    aux2 = aux.substring(0, bitsSubRed);
-    aux2 = binarySum(aux2, cont);
-    cont++;
-    aux31 = aux2;
-    aux2 = aux2.padRight(32, "0");
-    ipRed.add(dividirCadena(aux2, 8));
-    aux31 = aux31.padRight(32, "1");
-    ipBroadcast.add(dividirCadena(aux31, 8));
-    pos++;
-  }*/
   aux2 = aux.substring(0, bitsSubRed);
   aux2 = binarySum(aux2, cont);
   cont++;
   aux31 = aux2;
   aux2 = aux2.padRight(32, "0");
-  ipRed.add(dividirCadena(aux2, 8));
+  for (String element in dividirCadena(aux2, 8)) {
+    _ipRed.add(binarioDecimal(element).toString());
+  }
+  ipRed = _ipRed.join('.');
   aux31 = aux31.padRight(32, "1");
-  ipBroadcast.add(dividirCadena(aux31, 8));
+  for (var element in dividirCadena(aux31, 8)) {
+    _ipBroadcast.add(binarioDecimal(element).toString());
+  }
+  ipBroadcast = _ipBroadcast.join('.');
 }
 
 List binDec(List<String> lista) {

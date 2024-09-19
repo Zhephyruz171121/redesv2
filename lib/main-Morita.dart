@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:redesv2/vlsm.dart';
-import 'package:redesv2/vlsm2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,12 +14,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
         textTheme: GoogleFonts.robotoTextTheme(),
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: 'Geberacion de direcciones IP VLSM'),
+      home: const MyHomePage(title: 'Generacion de direcciones IP VLSM'),
     );
   }
 }
@@ -40,38 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _maskController = TextEditingController();
   final TextEditingController _cantidadSubredes = TextEditingController();
   final TextEditingController _cantidadHosts = TextEditingController();
-  List<String> listadireccionesRed = [];
-  List<String> listadireccionesDifucion = [];
-  List<String> aux = [];
   List<String> listacantidadHosts = [];
-  List<Subnet> subnets = [];
-
-  void ejecutar() {
-    /*List<int> listaParseada = [];
-    listadireccionesRed = [];
-    listadireccionesDifucion = [];
-    setState(() {
-      listacantidadHosts = _cantidadHosts.text.split(",");
-      for (var element in listacantidadHosts) {
-        listaParseada.add(int.parse(element));
-      }
-      aux = vlsm(_ipController.text, _maskController.text,
-          int.parse(_cantidadSubredes.text), listaParseada);
-      for (var element in aux) {
-        if (aux.indexOf(element) % 2 == 0 || aux.indexOf(element) == 0) {
-          listadireccionesRed.add(element);
-        } else {
-          listadireccionesDifucion.add(element);
-        }
-      }
-    });*/
-    setState(() {
-      subnets = calculateVLSM(
-          _ipController.text,
-          int.parse(_maskController.text),
-          listacantidadHosts.map(int.parse).toList());
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,6 +134,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                           textAlign: TextAlign.center)),
                                   Padding(
                                       padding: EdgeInsets.all(8),
+                                      child: Text("Rango de direcciones",
+                                          textAlign: TextAlign.center)),
+                                  Padding(
+                                      padding: EdgeInsets.all(8),
                                       child: Text("Mascara de red",
                                           textAlign: TextAlign.center)),
                                   Padding(
@@ -177,8 +148,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             for (var i = 0; i < listacantidadHosts.length; i++)
                               TableRow(children: [
                                 Text("Subred ${i + 1}"),
-                                Text(subnets[i].networkAddress),
-                                Text(subnets[i].broadcastAddress),
+                                Text("Direccion de red ${i + 1}"),
+                                Text("Direccion de broadcast ${i + 1}"),
+                                Text("Rango de direcciones ${i + 1}"),
                                 Text("Mascara de red ${i + 1}"),
                                 Text("Cantidad de direcciones ${i + 1}"),
                               ]),
@@ -186,15 +158,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       )
                     ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ejecutar();
-                    },
-                    child: const Text("Generar"),
                   ),
                 ),
               ],
