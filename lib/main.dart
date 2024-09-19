@@ -1,6 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:redesv2/vlsm.dart';
 import 'package:redesv2/vlsm2.dart';
 
 void main() {
@@ -38,39 +38,77 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _ipController = TextEditingController();
   final TextEditingController _maskController = TextEditingController();
-  final TextEditingController _cantidadSubredes = TextEditingController();
   final TextEditingController _cantidadHosts = TextEditingController();
   List<String> listadireccionesRed = [];
   List<String> listadireccionesDifucion = [];
   List<String> aux = [];
   List<String> listacantidadHosts = [];
   List<Subnet> subnets = [];
+  List<String> letras = [];
 
+  void mensajeError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void ordenRedesLetras() {
+    List<MapEntry<String, int>> hostsWithLetters = listacantidadHosts
+        .asMap()
+        .entries
+        .map((entry) => MapEntry(
+            String.fromCharCode(97 + entry.key), int.parse(entry.value)))
+        .toList();
+
+    hostsWithLetters.sort((a, b) => b.value.compareTo(a.value));
+
+    letras = hostsWithLetters.map((entry) => entry.key).toList();
+  }
+
+  void mensaje(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  /// Funcion que ejecuta el calculo de las subredes
+  /// Aqui se obtiene la direccion de red, direccion de difucion, mascara de red
+  /// y cantidad de direcciones.
+  /// Ademas de las validaciones de los campos de texto
   void ejecutar() {
-    /*List<int> listaParseada = [];
-    listadireccionesRed = [];
-    listadireccionesDifucion = [];
-    setState(() {
-      listacantidadHosts = _cantidadHosts.text.split(",");
-      for (var element in listacantidadHosts) {
-        listaParseada.add(int.parse(element));
-      }
-      aux = vlsm(_ipController.text, _maskController.text,
-          int.parse(_cantidadSubredes.text), listaParseada);
-      for (var element in aux) {
-        if (aux.indexOf(element) % 2 == 0 || aux.indexOf(element) == 0) {
-          listadireccionesRed.add(element);
-        } else {
-          listadireccionesDifucion.add(element);
-        }
-      }
-    });*/
+    if (_ipController.text.isEmpty ||
+        _maskController.text.isEmpty ||
+        _cantidadHosts.text.isEmpty) {
+      mensajeError('Por favor, complete todos los campos.');
+      return;
+    }
+    if (int.parse(_maskController.text) < 0 ||
+        int.parse(_maskController.text) > 32) {
+      mensajeError('La mascara de red es incorrecta ${_maskController.text}');
+      return;
+    }
+    int auxH = 0;
+    for (var element in listacantidadHosts) {
+      auxH += int.parse(element);
+    }
+    if (auxH > pow(2, 32 - int.parse(_maskController.text))) {
+      mensajeError(
+          'Se exedio la cantidad de usuarios para esta mascara de red ${_maskController.text}, solicitados: $auxH, disponibles: ${pow(2, 32 - int.parse(_maskController.text))}');
+      return;
+    }
     setState(() {
       subnets = calculateVLSM(
           _ipController.text,
           int.parse(_maskController.text),
           listacantidadHosts.map(int.parse).toList());
     });
+    mensaje('Subredes generadas correctamente');
   }
 
   @override
@@ -113,13 +151,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                 hintText: "Ejem: 24",
                               ),
                             ),
-                            TextFormField(
+                            /*TextFormField(
                               controller: _cantidadSubredes,
                               decoration: const InputDecoration(
                                 labelText: "Cantidad de subredes",
                                 hintText: "Ejem: 4",
                               ),
-                            ),
+                            ),*/
                             TextFormField(
                               controller: _cantidadHosts,
                               decoration: const InputDecoration(
@@ -176,11 +214,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ]),
                             for (var i = 0; i < listacantidadHosts.length; i++)
                               TableRow(children: [
-                                Text("Subred ${i + 1}"),
+                                Text("Subred ${letras[i]}"),
                                 Text(subnets[i].networkAddress),
                                 Text(subnets[i].broadcastAddress),
-                                Text("Mascara de red ${i + 1}"),
-                                Text("Cantidad de direcciones ${i + 1}"),
+                                Text(subnets[i].subnetMask),
+                                Text(subnets[i].subnetSize.toString()),
                               ]),
                           ],
                         ),
@@ -192,6 +230,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   margin: const EdgeInsets.all(10),
                   child: ElevatedButton(
                     onPressed: () {
+                      listacantidadHosts = _cantidadHosts.text.split(",");
+                      ordenRedesLetras();
                       ejecutar();
                     },
                     child: const Text("Generar"),
