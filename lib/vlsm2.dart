@@ -19,10 +19,22 @@ int ipToInt(String ip) {
   return (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
 }
 
+int maskToInt(int mask) {
+  return ~((1 << (32 - mask)) - 1);
+}
+
+String adjustBaseIp(String baseIp, int baseMask) {
+  int baseIpInt = ipToInt(baseIp);
+  int maskInt = maskToInt(baseMask);
+  int networkAddressInt = baseIpInt & maskInt;
+  return intToIp(networkAddressInt);
+}
+
 List<Subnet> calculateVLSM(String baseIp, int baseMask, List<int> hosts) {
   hosts.sort((a, b) => b.compareTo(a)); // Ordenar de mayor a menor
   List<Subnet> subnets = [];
-  int baseIpInt = ipToInt(baseIp);
+  String adjustedBaseIp = adjustBaseIp(baseIp, baseMask);
+  int baseIpInt = ipToInt(adjustedBaseIp);
   int currentIpInt = baseIpInt;
 
   for (int host in hosts) {
